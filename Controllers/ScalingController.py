@@ -46,7 +46,7 @@ class ScalingController:
         self.instance_ids.push(instance_id)
 
     def destroy_ec2_instance(self):
-        pass
+        self.ec2.instances.filter(InstanceIds=self.instance_ids).terminate()
 
     def scale_in_function(self):
         pass
