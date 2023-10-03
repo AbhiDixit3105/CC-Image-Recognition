@@ -44,7 +44,7 @@ def upload_image():
     return render_template("upload.html")
 
 
-#@flask_scheduler.task('interval', id='initiateScaling', seconds=10)
+@flask_scheduler.task('interval', id='initiateScaling', seconds=10)
 def initiateScaling():
     sc.monitor_queue_status()
 

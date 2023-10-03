@@ -64,5 +64,3 @@ class ScalingController:
             # add  (max-current) instances
             pass
         time.sleep(3)  # 3 second wait
-
-
