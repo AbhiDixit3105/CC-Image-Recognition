@@ -1,23 +1,24 @@
-# from flask import Flask
-# import ScalingController
-# from flask_apscheduler import APScheduler
-# app = Flask(__name__)
-# scheduler = APScheduler()
-# scheduler.init_app(app)
-# scheduler.start()
-# sc = ScalingController
-#
-# class WebController:
-#     def __int__(self):
-#
-#         pass
-#
-#     @scheduler.task('interval', id='my_job', seconds=10)
-#     def initiateScaling(self):
-#         sc.monitor_queue_status()
-#
-#     def run(self):
-#         app.run()
-# if __name__ == '__main__':
-#     wc=WebController()
-#     wc.run()
+from flask_apscheduler import APScheduler
+from ScalingController import ScalingController
+from flask import Flask
+
+# Flask constructor takes the name of
+# current module (__name__) as argument.
+flask_scheduler = APScheduler()
+app = Flask(__name__)
+flask_scheduler.init_app(app)
+flask_scheduler.start()
+sc = ScalingController()
+
+
+@app.route('/')
+def hello_world():
+    return 'Hello World'
+
+@flask_scheduler.task('interval', id='initiateScaling', seconds=10)
+def initiateScaling():
+    sc.monitor_queue_status()
+# main driver function
+if __name__ == '__main__':
+    app.run()
+

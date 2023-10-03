@@ -5,7 +5,17 @@ import schedule
 
 
 class ScalingController:
-
+    def __init__(self):
+        self.AMI = 'ami-09c6ef0459a2ff40e'
+        self.INSTANCE_TYPE = 't2.micro'
+        self.KEY_NAME = 'CC-PROJECT-KEY'
+        self.SUBNET_ID = 'subnet-09f0728d34cc36e41'
+        self.REGION = 'US-EAST-1'
+        self.max_instances = 10
+        self.send_queue_name = 'abc'
+        self.current_instance_count = 1
+        self.ec2 = boto3.resource('ec2')
+        self.monitor_interval_s = 10 # 10 seconds is very aggressive
     def check_backlog(self, queue_name):
         queue_resource = boto3.resource('sqs').Queue(queue_name)
         return len(queue_resource.receive_messages(VisibilityTimeout=2, MaxNumberOfMessages=10))
@@ -55,18 +65,4 @@ class ScalingController:
             pass
         time.sleep(3)  # 3 second wait
 
-
-
-    def __init__(self):
-        self.AMI = 'ami-09c6ef0459a2ff40e'
-        self.INSTANCE_TYPE = 't2.micro'
-        self.KEY_NAME = 'CC-PROJECT-KEY'
-        self.SUBNET_ID = 'subnet-09f0728d34cc36e41'
-        self.REGION = 'US-EAST-1'
-        self.max_instances = 10
-        self.send_queue_name = 'abc'
-        self.current_instance_count = 1
-        self.ec2 = boto3.resource('ec2')
-        self.monitor_interval_s = 10 # 10 seconds is very aggressive
-        # self.run(self.monitor_interval_s)
 
