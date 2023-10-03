@@ -52,6 +52,7 @@ def upload_image():
 @flask_scheduler.task('interval', id='initiateScaling', seconds=30)
 def initiateScaling():
     sc.monitor_queue_status()
+    print("lol abdasdbashdj")
 
 
 # main driver function
