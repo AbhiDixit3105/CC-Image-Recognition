@@ -49,10 +49,13 @@ class ScalingController:
         )
 
         instance_id = instance['Instances'][0]['InstanceId']
+
         self.instance_ids.append(instance_id)
+        print("Created ec2 instance with id : " + instance_id)
 
     def destroy_ec2_instance(self, destroy_instance_ids):
         self.ec2.instances.filter(InstanceIds=destroy_instance_ids).terminate()
+        print("Destroyed ec2 instance with id : " + destroy_instance_ids)
 
     def scale_in_function(self):
         self.destroy_ec2_instance([self.instance_ids.pop()])
@@ -66,27 +69,36 @@ class ScalingController:
         depth = self.check_backlog()
         instance_map = self.get_instance_map()
         current_instance_count = len(instance_map["RUNNING"])
-        backlog_p_i = depth / current_instance_count
+        backlog_p_i = depth / current_instance_count - 1
+        print("Depth is : ", depth)
+        print("Instance Map is : ", instance_map)
+        print("Backlog per instance is : ", backlog_p_i)
 
         if current_instance_count + len(instance_map["STARTING"]) == self.max_instances:
             # max scaling reached:
+            print("Not scaling, max instance count reached")
             pass
         elif backlog_p_i == 0:
+            print("Scaling down")
             self.scale_in_function()
             pass
         elif backlog_p_i <= 1:
+            print("Scaling up by 1")
             self.scale_out_function(1)
             # add 1 instance :
             pass
         elif backlog_p_i <= 3:
+            print("Scaling up")
             self.scale_out_function(max(1, int((self.max_instances - current_instance_count) / 3)))
             # add (max-current)/3 instances
             pass
         elif backlog_p_i <= 6:
+            print("Scaling up ")
             # add (max-current)/2 instances
             self.scale_out_function(max(1, int((self.max_instances - current_instance_count) / 2)))
             pass
         elif backlog_p_i >= 7:
+            print("Scaling up ")
             self.scale_out_function(max(1, int((self.max_instances - current_instance_count))))
             # add  (max-current) instances
             pass
