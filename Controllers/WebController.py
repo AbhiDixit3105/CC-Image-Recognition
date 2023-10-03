@@ -41,7 +41,7 @@ def upload_image():
             file.save(filename)
             return "File uploaded successfully"
 
-    return render_template("templates/upload.hml")
+    return render_template("upload.html")
 
 
 #@flask_scheduler.task('interval', id='initiateScaling', seconds=10)
