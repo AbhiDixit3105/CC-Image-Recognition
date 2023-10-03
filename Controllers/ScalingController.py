@@ -15,7 +15,9 @@ class ScalingController:
         self.send_queue_name = 'abc'
         self.current_instance_count = 1
         self.ec2 = boto3.resource('ec2')
-        self.monitor_interval_s = 10 # 10 seconds is very aggressive
+        self.monitor_interval_s = 10  # 10 seconds is very aggressive
+        self.instance_ids = []
+
     def check_backlog(self, queue_name):
         queue_resource = boto3.resource('sqs').Queue(queue_name)
         return len(queue_resource.receive_messages(VisibilityTimeout=2, MaxNumberOfMessages=10))
@@ -29,7 +31,19 @@ class ScalingController:
         return {'RUNNING': running_instances, 'STARTING': starting_instances}
 
     def create_ec2_instance(self):
-        pass
+        client = boto3.client('ec2')
+        instance = client.run_instances(
+            ImageId=self.AMI,
+            InstanceType=self.INSTANCE_TYPE,
+            KeyName=self.KEY_NAME,
+            SubnetId=self.SUBNET_ID,
+            MaxCount=1,
+            MinCount=1,
+            InstanceInitiatedShutdownBehavior='terminate'
+        )
+
+        instance_id = instance['Instances'][0]['InstanceId']
+        self.instance_ids.push(instance_id)
 
     def destroy_ec2_instance(self):
         pass
