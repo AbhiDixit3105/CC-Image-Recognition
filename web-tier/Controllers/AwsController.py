@@ -8,27 +8,45 @@ class AwsController:
         self.sqs_client = boto3.client('sqs')
         self.request_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-request-queue'
         self.response_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-response-queue'
-
+        self.sqs_client = boto3.client('sqs', region_name="us-east-1")
+        self.s3 = boto3.client('s3', region_name='us-east-1')
 
     def upload_to_s3(self, file, bucket_name):
-        s3 = boto3.client('s3')
+
         print("Uploading S3 object with SSE-KMS")
-        s3.put_object(Bucket=bucket_name,
-                      Key=self.encryption_key,
-                      Body=file,
-                      ServerSideEncryption='aws:kms',
-                      SSEKMSKeyId=self.kms_key_id)
+        self.s3.put_object(Bucket=bucket_name,
+                           Key=self.encryption_key,
+                           Body=file,
+                           ServerSideEncryption='aws:kms',
+                           SSEKMSKeyId=self.kms_key_id)
         print("Done")
 
         pass
 
     def send_to_sqs(self, message):
-        sqs_client = boto3.client('sqs', region_name="us-east-1")
-        response = sqs_client.send_message(
+
+        response = self.sqs_client.send_message(
             QueueUrl=self.request_queue_url,
             MessageBody=message
         )
         return response
 
+    def receive_from_sqs(self, message_id):
+        # get msg from reponse queue, check message body for message id and match to message_id.
+        # If exists, delete form queue, else ignore
 
+        response = self.sqs_client.receive_message(
+            QueueUrl=self.response_queue_url,
+            AttributeNames=['SentTimestamp'],
+            MaxNumberOfMessages=1,
+            MessageAttributeNames=['All'],
+            VisibilityTimeout=10,
+            WaitTimeSeconds=0
+        )
 
+        messages = response['Messages']
+        for message in messages:
+            if message_id in message['Body']:
+                output_val = message['Body'].split('-')[2]
+                message.delete()
+                return output_val
