@@ -1,10 +1,10 @@
 from flask_apscheduler import APScheduler
 from ScalingController import ScalingController
 from flask import Flask, request, render_template
+from AwsController import AwsController
 import os
+import boto3
 
-# Flask constructor takes the name of
-# current module (__name__) as argument.
 flask_scheduler = APScheduler()
 app = Flask(__name__)
 flask_scheduler.init_app(app)
@@ -12,11 +12,17 @@ flask_scheduler.start()
 sc = ScalingController()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ssm_client = boto3.client('ssm')
+command = 'python app_tier/image_classification.py '
+commands = [command]
+instance_ids = ['i-013adb440154a55d0']
 
+
+# i-02d039e7f2ee6aa41
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
 @app.route('/', methods=['GET', 'POST'])

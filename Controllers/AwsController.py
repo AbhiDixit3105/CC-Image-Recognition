@@ -2,8 +2,8 @@ import boto3
 
 
 class AwsController:
-
-
+    def upload_to_s3(self,file):
+        pass
     def send_to_sqs(self):
         pass
 
@@ -25,10 +25,5 @@ class AwsController:
             )
             return resp
 
-        # Credentials for all the boto clients are picked up from env when running on amazon linux EC2 (web server)
-    if __name__ == '__main__':
-            ssm_client = boto3.client('ssm')
-            commands = ['echo "hello world"']
-            instance_ids = ['i-013adb440154a55d0']
-            # i-02d039e7f2ee6aa41
-            execute_cmd_on_ec2(ssm_client, commands, instance_ids)
+
+
