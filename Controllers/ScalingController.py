@@ -46,7 +46,7 @@ class ScalingController:
         current_instance_count = len(instance_map.get("RUNNING", __default=1))
         backlog_p_i = depth / current_instance_count
         if len(instance_map.get("RUNNING")) + len(instance_map.get("STARTING")) == self.max_instances:
-            # max scaling :
+            # max scaling reached:
             pass
         elif backlog_p_i == 0:
             # scale in
