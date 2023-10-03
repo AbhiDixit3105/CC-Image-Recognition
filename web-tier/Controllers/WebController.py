@@ -17,7 +17,6 @@ command = 'python app_tier/image_classification.py '
 commands = [command]
 instance_ids = ['i-013adb440154a55d0']
 
-
 # i-02d039e7f2ee6aa41
 
 def allowed_file(filename):
@@ -50,7 +49,7 @@ def upload_image():
     return render_template("upload.html")
 
 
-@flask_scheduler.task('interval', id='initiateScaling', seconds=10)
+@flask_scheduler.task('interval', id='initiateScaling', seconds=30)
 def initiateScaling():
     sc.monitor_queue_status()
 
