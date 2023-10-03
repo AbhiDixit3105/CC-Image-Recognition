@@ -10,15 +10,13 @@ class AwsController:
         self.response_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-response-queue'
         self.sqs_client = boto3.client('sqs', region_name="us-east-1")
         self.s3 = boto3.client('s3', region_name='us-east-1')
+        self.s3_bucket_in = 'cc-ss-input-bucket'
+        self.s3_bucket_o = 'cc-ss-output-bucket'
 
-    def upload_to_s3(self, file, bucket_name):
-
+    def upload_to_s3(self, file):
+        s3= boto3.client('s3', region_name='us-east-1')
         print("Uploading S3 object with SSE-KMS")
-        self.s3.put_object(Bucket=bucket_name,
-                           Key=self.encryption_key,
-                           Body=file,
-                           ServerSideEncryption='aws:kms',
-                           SSEKMSKeyId=self.kms_key_id)
+        s3.upload_fileobj(file,'cc-ss-input-bucket',file.filename)
         print("Done")
 
         pass

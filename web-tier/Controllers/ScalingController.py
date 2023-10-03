@@ -20,13 +20,13 @@ class ScalingController:
 
     def check_backlog(self):
         sqs_client = boto3.client('sqs', region_name="us-east-1")
-        return len(sqs_client.receive_messages(sqs_client.receive_message(
+        return len(sqs_client.receive_message(
             QueueUrl=self.request_queue_url,
             AttributeNames=['ALL'],
             MaxNumberOfMessages=10,
             VisibilityTimeout=1,
             WaitTimeSeconds=0
-        )))
+        ))
 
     def get_instance_map(self):
         running_instances = [instance.id for instance in self.ec2.instances.filter(
@@ -65,10 +65,10 @@ class ScalingController:
     def monitor_queue_status(self):
         depth = self.check_backlog()
         instance_map = self.get_instance_map()
-        current_instance_count = len(instance_map.get("RUNNING", __default=1))
+        current_instance_count = len(instance_map["RUNNING"])
         backlog_p_i = depth / current_instance_count
 
-        if current_instance_count + len(instance_map.get("STARTING")) == self.max_instances:
+        if current_instance_count + len(instance_map["STARTING"]) == self.max_instances:
             # max scaling reached:
             pass
         elif backlog_p_i == 0:

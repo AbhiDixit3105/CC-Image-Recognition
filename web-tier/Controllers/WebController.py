@@ -10,6 +10,7 @@ app = Flask(__name__)
 flask_scheduler.init_app(app)
 flask_scheduler.start()
 sc = ScalingController()
+awsc=AwsController()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ssm_client = boto3.client('ssm',region_name='us-east-1')
@@ -43,7 +44,8 @@ def upload_image():
         # If everything is okay, save the file to the uploads folder
         if file:
             filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(filename)
+            awsc.upload_to_s3(file)
+            awsc.send_to_sqs(file.filename)
             return "File uploaded successfully"
 
     return render_template("upload.html")
@@ -52,7 +54,7 @@ def upload_image():
 @flask_scheduler.task('interval', id='initiateScaling', seconds=30)
 def initiateScaling():
     sc.monitor_queue_status()
-    print("lol abdasdbashdj")
+    print("Monitoring Queues")
 
 
 # main driver function
