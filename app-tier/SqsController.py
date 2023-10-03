@@ -24,8 +24,7 @@ def get_queue_data():
         WaitTimeSeconds=0
     )
 
-    message = request['Messages'][0]
-    receipt_handle = message['ReceiptHandle']
+    return request['Messages'][0]
 
 
 def send_data_to_queue(image_output):
@@ -48,15 +47,19 @@ def classify_image(image_name):
     subprocess.run(['touch', filename])
     output_file = open(filename, "w")
     subprocess.run(('python3', './image_classification.py', path), stdout=output_file)
-    pass
+    return output_file
 
 
 if __name__ == '__main__':
     while True:
         message = get_queue_data()
-        image_name = message.body()
+        image_name = message['Body']
         download_image(image_name)
-        classify_image(image_name)
-        send_data_to_queue(image_name + "hello_world")
-        message.delete()
-        # time.sleep(2)
+        message_id = message['MessageId']
+        output_val = classify_image(image_name)
+        send_data_to_queue(message_id + '-' + image_name + '-' + output_val)
+        delete_response = sqs_client.delete_message(
+            QueueUrl=request_queue_url,
+            ReceiptHandle=message['ReceiptHandle']
+        )
+
