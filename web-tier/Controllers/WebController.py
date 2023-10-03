@@ -12,7 +12,7 @@ flask_scheduler.start()
 sc = ScalingController()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ssm_client = boto3.client('ssm')
+ssm_client = boto3.client('ssm',region_name='us-east-1')
 command = 'python app_tier/image_classification.py '
 commands = [command]
 instance_ids = ['i-013adb440154a55d0']
@@ -58,3 +58,4 @@ def initiateScaling():
 # main driver function
 if __name__ == '__main__':
     app.run()
+

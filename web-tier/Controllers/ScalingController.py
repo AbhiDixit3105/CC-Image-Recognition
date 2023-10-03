@@ -1,25 +1,24 @@
 import time
 
 import boto3
-import schedule
 
 
 class ScalingController:
     def __init__(self):
-        self.AMI = 'ami-09c6ef0459a2ff40e'
-        self.INSTANCE_TYPE = 't2.micro'
-        self.KEY_NAME = 'CC-PROJECT-KEY'
-        self.SUBNET_ID = 'subnet-09f0728d34cc36e41'
-        self.REGION = 'US-EAST-1'
+        self.ami = 'ami-09c6ef0459a2ff40e'
+        self.instance_type = 't2.micro'
+        self.key_name = 'CC-PROJECT-KEY'
+        self.subnet_id = 'subnet-09f0728d34cc36e41'
+        self.region = 'us-east-1'
         self.max_instances = 10
         self.send_queue_name = 'abc'
         self.current_instance_count = 1
-        self.ec2 = boto3.resource('ec2')
+        self.ec2 = boto3.resource('ec2', region_name=self.region)
         self.monitor_interval_s = 10  # 10 seconds is very aggressive
         self.instance_ids = []
 
     def check_backlog(self, queue_name):
-        queue_resource = boto3.resource('sqs').Queue(queue_name)
+        queue_resource = boto3.resource('sqs',region_name=self.region).Queue(queue_name)
         return len(queue_resource.receive_messages(VisibilityTimeout=2, MaxNumberOfMessages=10))
 
     def get_instance_map(self):
@@ -31,12 +30,12 @@ class ScalingController:
         return {'RUNNING': running_instances, 'STARTING': starting_instances}
 
     def create_ec2_instance(self):
-        client = boto3.client('ec2')
+        client = boto3.client('ec2',region_name=self.region)
         instance = client.run_instances(
-            ImageId=self.AMI,
-            InstanceType=self.INSTANCE_TYPE,
-            KeyName=self.KEY_NAME,
-            SubnetId=self.SUBNET_ID,
+            ImageId=self.ami,
+            InstanceType=self.instance_type,
+            KeyName=self.key_name,
+            SubnetId=self.subnet_id,
             MaxCount=1,
             MinCount=1,
             InstanceInitiatedShutdownBehavior='terminate'
