@@ -31,6 +31,12 @@ class AwsController:
         )
         return response
 
+    def delete_message(self, message):
+        delete_response = self.sqs_client.delete_message(
+            QueueURL=self.response_queue_url,
+            ReceiptHandle=message['ReceiptHandle']
+        )
+
     def receive_from_sqs(self, message_id):
         # get msg from reponse queue, check message body for message id and match to message_id.
         # If exists, delete form queue, else ignore
@@ -48,5 +54,5 @@ class AwsController:
         for message in messages:
             if message_id in message['Body']:
                 output_val = message['Body'].split('-')[2]
-                message.delete()
+                self.delete_message(message)
                 return output_val
