@@ -10,13 +10,14 @@ app = Flask(__name__)
 flask_scheduler.init_app(app)
 flask_scheduler.start()
 sc = ScalingController()
-awsc=AwsController()
+awsc = AwsController()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ssm_client = boto3.client('ssm',region_name='us-east-1')
+ssm_client = boto3.client('ssm', region_name='us-east-1')
 command = 'python app_tier/image_classification.py '
 commands = [command]
 instance_ids = ['i-013adb440154a55d0']
+
 
 # i-02d039e7f2ee6aa41
 
@@ -45,7 +46,8 @@ def upload_image():
         if file:
             filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             awsc.upload_to_s3(file)
-            awsc.send_to_sqs(file.filename)
+            response = awsc.send_to_sqs(file.filename)
+            output_val=awsc.receive_from_sqs(response['Messages'][0]['MessageId'])
             return "File uploaded successfully"
 
     return render_template("upload.html")
@@ -60,4 +62,3 @@ def initiateScaling():
 # main driver function
 if __name__ == '__main__':
     app.run()
-

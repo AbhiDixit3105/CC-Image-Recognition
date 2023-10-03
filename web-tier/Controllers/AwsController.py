@@ -1,3 +1,5 @@
+import time
+
 import boto3
 
 
@@ -52,3 +54,4 @@ class AwsController:
                 output_val = message['Body'].split('-')[2]
                 self.delete_message(message)
                 return output_val
+            time.sleep(3)
