@@ -11,15 +11,22 @@ class ScalingController:
         self.subnet_id = 'subnet-09f0728d34cc36e41'
         self.region = 'us-east-1'
         self.max_instances = 10
-        self.send_queue_name = 'abc'
+        self.request_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-request-queue'
+        self.response_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-response-queue'
         self.current_instance_count = 1
         self.ec2 = boto3.resource('ec2', region_name=self.region)
         self.monitor_interval_s = 10  # 10 seconds is very aggressive
         self.instance_ids = []
 
-    def check_backlog(self, queue_name):
-        queue_resource = boto3.resource('sqs',region_name=self.region).Queue(queue_name)
-        return len(queue_resource.receive_messages(VisibilityTimeout=2, MaxNumberOfMessages=10))
+    def check_backlog(self):
+        sqs_client = boto3.client('sqs', region_name="us-east-1")
+        return len(sqs_client.receive_messages(sqs_client.receive_message(
+            QueueUrl=self.request_queue_url,
+            AttributeNames=['ALL'],
+            MaxNumberOfMessages=10,
+            VisibilityTimeout=1,
+            WaitTimeSeconds=0
+        )))
 
     def get_instance_map(self):
         running_instances = [instance.id for instance in self.ec2.instances.filter(
@@ -30,7 +37,7 @@ class ScalingController:
         return {'RUNNING': running_instances, 'STARTING': starting_instances}
 
     def create_ec2_instance(self):
-        client = boto3.client('ec2',region_name=self.region)
+        client = boto3.client('ec2', region_name=self.region)
         instance = client.run_instances(
             ImageId=self.ami,
             InstanceType=self.instance_type,
@@ -50,14 +57,13 @@ class ScalingController:
     def scale_in_function(self):
         self.destroy_ec2_instance([self.instance_ids.pop()])
 
-
     def scale_out_function(self, count):
         for i in range(count):
             self.create_ec2_instance()
         pass
 
     def monitor_queue_status(self):
-        depth = self.check_backlog(self.send_queue_name)
+        depth = self.check_backlog()
         instance_map = self.get_instance_map()
         current_instance_count = len(instance_map.get("RUNNING", __default=1))
         backlog_p_i = depth / current_instance_count
