@@ -58,7 +58,7 @@ if __name__ == '__main__':
             message_id = message['MessageId']
             output_val = classify_image(image_name)
             send_data_to_queue(str(message_id) + '-' + str(image_name) + '-')
-            print("proceedind to delete message")
+            print("proceeding to delete message")
             delete_response = sqs_client.delete_message(
                 QueueUrl=request_queue_url,
                 ReceiptHandle=message['ReceiptHandle']
