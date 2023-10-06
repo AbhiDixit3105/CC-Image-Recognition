@@ -30,12 +30,14 @@ class AwsController:
         return response
 
     def delete_message(self, message):
+        print(message)
         delete_response = self.sqs_client.delete_message(
-            QueueURL=self.response_queue_url,
+            QueueUrl=self.response_queue_url,
             ReceiptHandle=message['ReceiptHandle']
         )
+        print("Delete message successful")
 
-    def receive_from_sqs(self, message_id):
+    def receive_from_sqs(self):
         # get msg from reponse queue, check message body for message id and match to message_id.
         # If exists, delete form queue, else ignore
 
@@ -47,11 +49,12 @@ class AwsController:
             VisibilityTimeout=10,
             WaitTimeSeconds=0
         )
-
+        print("Inside SQS listen")
+        print(response)
         messages = response['Messages']
+
         for message in messages:
-            if message_id in message['Body']:
-                output_val = message['Body'].split('-')[2]
-                self.delete_message(message)
-                return output_val
-            time.sleep(3)
+            output_val = message['Body']
+            # self.delete_message(message)
+            return output_val
+        time.sleep(3)

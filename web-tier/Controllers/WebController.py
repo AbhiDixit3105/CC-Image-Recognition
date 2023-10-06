@@ -4,6 +4,7 @@ from flask import Flask, request, render_template
 from AwsController import AwsController
 import os
 import boto3
+import logging
 
 flask_scheduler = APScheduler()
 app = Flask(__name__)
@@ -18,6 +19,7 @@ command = 'python app_tier/image_classification.py '
 commands = [command]
 instance_ids = ['i-013adb440154a55d0']
 
+logging.basicConfig(filename='app.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # i-02d039e7f2ee6aa41
 
@@ -28,6 +30,7 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_image():
+    app.logger.debug("Run hua re")
     if request.method == 'POST':
         # Check if a file was uploaded
         if 'file' not in request.files:
@@ -45,9 +48,13 @@ def upload_image():
         # If everything is okay, save the file to the uploads folder
         if file:
             filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            app.logger.debug("Kuch toh kar bhadve")
             awsc.upload_to_s3(file)
             response = awsc.send_to_sqs(file.filename)
-            output_val=awsc.receive_from_sqs(response['Messages'][0]['MessageId'])
+            app.logger.debug("Logging Response")
+            app.logger.debug(response)
+            output_val=awsc.receive_from_sqs()
+            print(output_val)
             return "File uploaded successfully"
 
     return render_template("upload.html")
@@ -61,4 +68,4 @@ def initiateScaling():
 
 # main driver function
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
