@@ -55,7 +55,7 @@ class ScalingController:
 
     def create_ec2_instance(self,count):
         client = boto3.client("ec2", region_name=self.region)
-        user_data_script = user_data_script = """#!/bin/bash
+        user_data_script = """#!/bin/bash
 python3 /home/ubuntu/sqs-tier/SqsController.py
 """
         instance = client.run_instances(
@@ -71,7 +71,7 @@ python3 /home/ubuntu/sqs-tier/SqsController.py
                 {
                     "ResourceType": "instance",
                     "Tags": [
-                        {"Key": "Name", "Value": "CC-PROCESSING-SERVER"+str(count)},
+                        {"Key": "Name", "Value": "CC-PROCESSING-SERVER-"+str(count)},
                         {"Key": "cc-processing-server", "Value": "cc-app-tier"},
                     ],
                 }
