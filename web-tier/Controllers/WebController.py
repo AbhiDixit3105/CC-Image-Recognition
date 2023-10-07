@@ -30,7 +30,6 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_image():
-    app.logger.debug("Run hua re")
     if request.method == 'POST':
         # Check if a file was uploaded
         if 'file' not in request.files:
@@ -48,7 +47,6 @@ def upload_image():
         # If everything is okay, save the file to the uploads folder
         if file:
             filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            app.logger.debug("Kuch toh kar bhadve")
             awsc.upload_to_s3(file)
             response = awsc.send_to_sqs(file.filename)
             app.logger.debug("Logging Response")
@@ -60,7 +58,7 @@ def upload_image():
     return render_template("upload.html")
 
 
-@flask_scheduler.task('interval', id='initiateScaling', seconds=60)
+@flask_scheduler.task('interval', id='initiateScaling', seconds=10, max_instances=1)
 def initiate_scaling():
     sc.monitor_queue_status()
     print("Monitoring Queues")

@@ -5,11 +5,11 @@ import boto3
 
 class ScalingController:
     def __init__(self):
-        self.ami = "ami-08c91ab714ebe5c98"
-        self.instance_type = "t2.micro"
-        self.key_name = "CC-PROJECT-KEY"
+        self.ami = 'ami-08c91ab714ebe5c98'
+        self.instance_type = 't2.micro'
+        self.key_name = 'CC-PROJECT-KEY'
         self.subnet_id = "subnet-09f0728d34cc36e41"
-        self.region = "us-east-1"
+        self.region = 'us-east-1'
         self.max_instances = 10
         self.request_queue_url = (
             "https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-request-queue"
@@ -61,18 +61,18 @@ class ScalingController:
 
     def create_ec2_instance(self, cc):
         client = boto3.client("ec2", region_name=self.region)
-        user_data_script = user_data_script = """#!/bin/bash
-python3 /home/ubuntu/sqs-tier/AppController.py
+        user_data_script = """#!/bin/bash
+python3 /home/ubuntu/sqs-tier/SqsController.py
 """
         instance = client.run_instances(
             ImageId=self.ami,
             InstanceType=self.instance_type,
             KeyName=self.key_name,
-            SubnetId=self.subnet_id,
             MaxCount=1,
             MinCount=1,
-            InstanceInitiatedShutdownBehavior="terminate",
-            UserData=user_data_script,
+            InstanceInitiatedShutdownBehavior='terminate',
+            SecurityGroupIds=['sg-0f94ce2d60babfb06'],
+            UserData = user_data_script,
             TagSpecifications=[
                 {
                     "ResourceType": "instance",

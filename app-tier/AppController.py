@@ -36,7 +36,7 @@ def send_data_to_queue(image_output):
 
 def download_image(image_name):
     session = boto3.client("s3",aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    file_name = '/home/ubuntu/inputImages/' + image_name + '.jpg'
+    file_name = '/home/ubuntu/inputImages/' + image_name
     session.download_file(s3_bucket_in, image_name, file_name)
 
 
