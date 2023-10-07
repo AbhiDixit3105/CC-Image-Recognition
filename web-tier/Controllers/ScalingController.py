@@ -93,9 +93,9 @@ python3 /home/ubuntu/sqs-tier/AppController.py
         print("Destroyed ec2 instance with id : " + destroy_instance_ids)
 
     def scale_in_function(self):
-        instance_id= self.get_instance_map().get("RUNNING").pop()
+        instance_id = self.get_instance_map().get("RUNNING").pop()
         self.destroy_ec2_instance([instance_id])
-        print("Removed instance with id : ",instance_id)
+        print("Removed instance with id : ", instance_id)
 
     def scale_out_function(self, current_instance_count, scale_out_count):
         for i in range(scale_out_count):
@@ -106,7 +106,6 @@ python3 /home/ubuntu/sqs-tier/AppController.py
         depth = self.check_backlog()
         print("Depth is : ", depth)
         instance_map = self.get_instance_map()
-        print("Depth is : ", depth)
         current_running_instance_count = len(instance_map["RUNNING"])
         print("Current instance count", current_running_instance_count)
 
@@ -117,6 +116,7 @@ python3 /home/ubuntu/sqs-tier/AppController.py
             print("Scaling down")
             if current_running_instance_count > self.min_instances:
                 self.scale_in_function()
+                current_running_instance_count -= 1
         elif current_running_instance_count + current_starting_instance_count == self.max_instances:
             print("Not scaling, max instance count reached")
         elif depth > 1 and current_starting_instance_count == 0:
