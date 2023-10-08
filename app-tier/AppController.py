@@ -35,15 +35,17 @@ def send_data_to_queue(image_output):
 
 
 def download_image(image_name):
-    session = boto3.client("s3",aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    session = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     file_name = '/home/ubuntu/inputImages/' + image_name
     session.download_file(s3_bucket_in, image_name, file_name)
 
-def upload_to_s3(file):
+
+def upload_to_s3(file, filename):
     s3 = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     print("Uploading S3 object with SSE-KMS")
-    s3.upload_fileobj(file,'cc-ss-input-bucket',file.filename)
+    s3.upload_fileobj(file, 'cc-ss-input-bucket', filename)
     print("Done")
+
 
 def classify_image(image_name):
     path = '/home/ubuntu/inputImages/' + image_name
@@ -55,7 +57,7 @@ def classify_image(image_name):
     out, err = p.communicate()
     output_file.write("Output: {}\n".format(out.decode()))
     output_file.write("Error: {}\n".format(err.decode()))
-    upload_to_s3(output_file)
+    upload_to_s3(output_file, image_name + '.txt')
     return out.decode()
 
 
@@ -80,6 +82,3 @@ if __name__ == '__main__':
         else:
             print(f"Operation executed")
         time.sleep(10)
-
-
-
