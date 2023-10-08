@@ -39,14 +39,24 @@ def download_image(image_name):
     file_name = '/home/ubuntu/inputImages/' + image_name
     session.download_file(s3_bucket_in, image_name, file_name)
 
+def upload_to_s3(file):
+    s3 = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    print("Uploading S3 object with SSE-KMS")
+    s3.upload_fileobj(file,'cc-ss-input-bucket',file.filename)
+    print("Done")
 
 def classify_image(image_name):
     path = '/home/ubuntu/inputImages/' + image_name
     filename = '/home/ubuntu/outputImages/' + image_name + '.txt'
     subprocess.run(['touch', filename])
     output_file = open(filename, "w")
-    subprocess.run(('python3', './image_classification.py', path), stdout=output_file)
-    return output_file
+    p = subprocess.Popen(['python3', './image_classification.py', path],
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    output_file.write("Output: {}\n".format(out.decode()))
+    output_file.write("Error: {}\n".format(err.decode()))
+    upload_to_s3(output_file)
+    return out.decode()
 
 
 if __name__ == '__main__':
