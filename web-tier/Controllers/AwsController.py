@@ -51,10 +51,12 @@ class AwsController:
         )
         print("Inside SQS listen")
         print(response)
-        messages = response['Messages']
-
-        for message in messages:
-            output_val = message['Body']
-            # self.delete_message(message)
-            return output_val
-        time.sleep(3)
+        if 'Messages' in response:
+            messages = response['Messages']
+            for message in messages:
+                output_val = message['Body']
+                print(output_val)
+                #self.delete_message(message)
+                return [ output_val, message]
+            time.sleep(3)
+        return []

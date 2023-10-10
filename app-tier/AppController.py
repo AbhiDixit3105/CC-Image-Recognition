@@ -1,6 +1,7 @@
 import subprocess
 import time
 import boto3
+import os
 
 request_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-request-queue'
 response_queue_url = 'https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-response-queue'
@@ -23,7 +24,7 @@ def get_queue_data():
         VisibilityTimeout=10,
         WaitTimeSeconds=0
     )
-
+    print(request)
     return request['Messages'][0]
 
 
@@ -43,7 +44,7 @@ def download_image(image_name):
 def upload_to_s3(file, filename):
     s3 = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     print("Uploading S3 object with SSE-KMS")
-    s3.upload_fileobj(file, 'cc-ss-input-bucket', filename)
+    s3.upload_file(file, s3_bucket_o,filename)
     print("Done")
 
 
@@ -57,7 +58,13 @@ def classify_image(image_name):
     out, err = p.communicate()
     output_file.write("Output: {}\n".format(out.decode()))
     output_file.write("Error: {}\n".format(err.decode()))
-    upload_to_s3(output_file, image_name + '.txt')
+    output_file.close()
+    upload_to_s3(filename, os.path.splitext(image_name)[0] + '.txt')
+    try:
+        subprocess.run(['rm', path, filename], check=True)
+        print("Files deleted successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
     return out.decode()
 
 
@@ -66,10 +73,13 @@ if __name__ == '__main__':
         try:
             message = get_queue_data()
             image_name = message['Body']
+            print("Image Name " + str(image_name))
             download_image(image_name)
             message_id = message['MessageId']
             output_val = classify_image(image_name)
-            send_data_to_queue(str(message_id) + '-' + str(image_name) + '-')
+            print("Printing Output Value :: ")
+            print(output_val)
+            send_data_to_queue(str(output_val))
             print("proceeding to delete message")
             delete_response = sqs_client.delete_message(
                 QueueUrl=request_queue_url,

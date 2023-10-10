@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Image Upload</title>
+    <title>Results</title>
 </head>
 <body>
-    <h1>Upload an Image</h1>
+    <h1>Results</h1>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file">
         <input type="submit" value="Upload">
     </form>
+    <table>
+        <tr>
+            <th>Filename</th>
+            <th>Result</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.name }}</td>
+            <td>{{ result.classification }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
