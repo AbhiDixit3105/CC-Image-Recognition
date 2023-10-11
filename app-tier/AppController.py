@@ -44,7 +44,7 @@ def download_image(image_name):
 def upload_to_s3(file, filename):
     s3 = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     print("Uploading S3 object with SSE-KMS")
-    s3.upload_file(file, s3_bucket_o,filename)
+    s3.upload_file(file, s3_bucket_o, filename)
     print("Done")
 
 
@@ -57,12 +57,12 @@ def classify_image(image_name):
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # Create a subprocess.Popen() object
 
-
     # Set the capture_output argument to True
     p.capture_output = True
     # Execute the command using the run() method
-    out,err = p.communicate()
-    output_file.write("Output: {}\n".format(out.decode()))
+    out, err = p.communicate()
+    sol = out.decode();
+    output_file.write("Output: {}\n".format(sol))
     output_file.write("Error: {}\n".format(err))
     output_file.close()
     upload_to_s3(filename, os.path.splitext(image_name)[0] + '.txt')
@@ -71,7 +71,7 @@ def classify_image(image_name):
         print("Files deleted successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
-    return out.decode()
+    return sol
 
 
 if __name__ == '__main__':
@@ -97,4 +97,4 @@ if __name__ == '__main__':
             time.sleep(5)
         else:
             print(f"Operation executed")
-        time.sleep(10)
+        time.sleep(3)

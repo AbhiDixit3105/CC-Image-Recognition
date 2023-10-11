@@ -9,7 +9,7 @@ sudo -H -u ubuntu bash -c 'python3 /home/ubuntu/app-tier/AppController.py'"""
 
 class ScalingController:
     def __init__(self):
-        self.ami = 'ami-0799d33b4fe534e22'
+        self.ami = 'ami-067c87a45409b3d98'
         self.instance_type = 't2.micro'
         self.key_name = 'CC-PROJECT-KEY'
         self.subnet_id = "subnet-09f0728d34cc36e41"
