@@ -15,7 +15,7 @@
 
 
 ## Web-tier URL : 
-     https://
+     (http://34.197.236.175/classify route.)
 ## SQS Queue Names : 
     1. SQS request queue: cc-proj-1-request-queue
     2. SQS response queue: cc-proj-1-response-queue
