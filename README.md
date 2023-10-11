@@ -2,9 +2,12 @@
 
 ## Group Members and Tasks:
     1. Bhavesh khubnani
-        1. EC2 app tier provisioning
-        2. Creating scheduled scaling task based on queue depth
-        3.
+        1. Provisioned an EC2 instance for the web tier using the AWS console.
+        2. Designed a web controller to handle specific image file uploads from web tier users.
+        3.Uploaded user image files to the S3 input bucket and sent files to the SQS request queue for processing.
+        4.Developed scaling logic in the scaling controller, monitoring the SQS queue depth every 30 seconds, and dynamically creating or terminating EC2 instances in the app tier, with a limit of 20 instances.
+        5.Provided assistance and support to other team members as needed.
+
     2. Aishwariya Ranjan
         1. Provisioned the request and response SQS queues for the app.  
         2. Code to send messages to SQS request queue and receive messages response queues from the web tier side.  
