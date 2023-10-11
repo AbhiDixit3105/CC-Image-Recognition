@@ -65,8 +65,6 @@ def classify_image(image_name):
     output_file.write("Output: {}\n".format(out.decode()))
     output_file.write("Error: {}\n".format(err))
     output_file.close()
-    print(out)
-    print(err)
     upload_to_s3(filename, os.path.splitext(image_name)[0] + '.txt')
     try:
         subprocess.run(['rm', path, filename], check=True)

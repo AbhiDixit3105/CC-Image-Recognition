@@ -66,7 +66,7 @@ class ScalingController:
 
     def create_ec2_instance(self, cc):
         client = boto3.client("ec2", region_name=self.region)
-        # user_data = base64.b64encode(user_data_script.encode()).decode()
+        #user_data = base64.b64encode(user_data_script.encode()).decode()
         instance = client.run_instances(
             ImageId=self.ami,
             InstanceType=self.instance_type,
