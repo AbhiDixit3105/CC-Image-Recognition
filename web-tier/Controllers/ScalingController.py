@@ -1,20 +1,20 @@
-import base64
-import time
-
 import boto3
 
 user_data_script = """#!/bin/bash
-sudo -H -u ubuntu bash -c 'python3 /home/ubuntu/app-tier/AppController.py'"""
+set -e -x
+export PYTHONPATH=/home/ubuntu/.local/lib/python3.10/site-packages/
+cd /home/ubuntu/app-tier
+python3 AppController.py"""
 
 
 class ScalingController:
     def __init__(self):
-        self.ami = 'ami-067c87a45409b3d98'
+        self.ami = 'ami-0c478986cbb8292d8'
         self.instance_type = 't2.micro'
         self.key_name = 'CC-PROJECT-KEY'
         self.subnet_id = "subnet-09f0728d34cc36e41"
         self.region = 'us-east-1'
-        self.max_instances = 10
+        self.max_instances = 20
         self.request_queue_url = (
             "https://sqs.us-east-1.amazonaws.com/827983923224/cc-proj-1-request-queue"
         )
@@ -23,14 +23,12 @@ class ScalingController:
         )
         self.current_instance_count = 1
         self.ec2 = boto3.resource("ec2", region_name=self.region)
-
         self.min_instances = 1
 
     def check_backlog(self):
         sqs_client = boto3.client("sqs", region_name="us-east-1")
         response = sqs_client.get_queue_attributes(
             QueueUrl=self.request_queue_url,
-            VisibilityTimeout=2,
             AttributeNames=["ApproximateNumberOfMessages"],
         )
         num_messages = int(response["Attributes"]["ApproximateNumberOfMessages"])
@@ -53,11 +51,16 @@ class ScalingController:
                 Filters=[
                     {
                         "Name": "instance-state-name",
-                        "Values": ["starting", "bootstraping"],
+                        "Values": ["pending"],
                     },
-                    {"Name": "tag:cc-processing-server",
-                     "Values": ["cc-app-tier"]
-                     }
+                    {
+                        "Name": "instance-status.status",
+                        "Values": ["initializing"],
+                    },
+                    {
+                        "Name": "tag:cc-processing-server",
+                        "Values": ["cc-app-tier"]
+                    }
                 ]
             )
         ]
@@ -66,7 +69,7 @@ class ScalingController:
 
     def create_ec2_instance(self, cc):
         client = boto3.client("ec2", region_name=self.region)
-        #user_data = base64.b64encode(user_data_script.encode()).decode()
+        # user_data = base64.b64encode(user_data_script.encode()).decode()
         instance = client.run_instances(
             ImageId=self.ami,
             InstanceType=self.instance_type,
@@ -115,8 +118,8 @@ class ScalingController:
         if current_running_instance_count == 0:
             self.scale_out_function(0, self.min_instances)
         if depth == 0:
-            print("Scaling down")
             if current_running_instance_count > self.min_instances:
+                print("Scaling down")
                 self.scale_in_function()
                 current_running_instance_count -= 1
         if current_running_instance_count + current_starting_instance_count == self.max_instances:
@@ -129,3 +132,7 @@ class ScalingController:
                 depth, available_capacity)
             self.scale_out_function(current_running_instance_count, scale_up_count)
             print("Scaling by deficient count")
+        elif current_starting_instance_count > 0:
+            print("Not scaling as new instances are already starting")
+        else:
+            print("Not scaling, conditions were not met")
