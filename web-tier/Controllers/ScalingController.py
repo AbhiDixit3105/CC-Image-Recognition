@@ -123,7 +123,7 @@ class ScalingController:
                 current_running_instance_count -= 1
         if current_running_instance_count + current_starting_instance_count == self.max_instances:
             print("Not scaling, max instance count reached")
-        elif depth > 1 and current_starting_instance_count == 0:
+        elif depth > 1 == 0:
             print("depth > 1")
             available_capacity = self.max_instances - current_running_instance_count - current_starting_instance_count
             scale_up_count = min(depth - current_starting_instance_count,
