@@ -3,15 +3,23 @@ import time
 
 import boto3
 
-user_data_script = '''#!/bin/bash
+user_data_script = """#!/bin/bash
 set -e -x
+sudo apt-get update
+mkdir inputImages
+mkdir outputImages
 cd /home/ubuntu/app-tier
-sudo pip3 install boto3
-sudo python3 AppController.py'''
+sudo apt-get install awscli -y
+pip3 install boto3
+export AWS_ACCESS_KEY_ID=AKIA4BR5QBAMDUC72SQX
+export AWS_SECRET_ACCESS_KEY=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
+export AWS_DEFAULT_REGION=us-east-1
+aws s3 cp s3://cc-ss-input-bucket/AppController.py .
+su ubuntu -c 'python3 AppController.py'"""
 
 class ScalingController:
     def __init__(self):
-        self.ami = 'ami-0799d33b4fe534e22'
+        self.ami = 'ami-09c6ef0459a2ff40e'
         self.instance_type = 't2.micro'
         self.key_name = 'CC-PROJECT-KEY'
         self.subnet_id = "subnet-09f0728d34cc36e41"

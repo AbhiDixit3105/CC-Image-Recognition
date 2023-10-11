@@ -46,7 +46,7 @@ class AwsController:
             AttributeNames=['SentTimestamp'],
             MaxNumberOfMessages=1,
             MessageAttributeNames=['All'],
-            VisibilityTimeout=10,
+            VisibilityTimeout=3,
             WaitTimeSeconds=0
         )
         print("Inside SQS listen")

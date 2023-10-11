@@ -21,7 +21,7 @@ def get_queue_data():
         AttributeNames=['SentTimestamp'],
         MaxNumberOfMessages=1,
         MessageAttributeNames=['All'],
-        VisibilityTimeout=10,
+        VisibilityTimeout=3,
         WaitTimeSeconds=0
     )
     print(request)
@@ -51,13 +51,17 @@ def upload_to_s3(file, filename):
 def classify_image(image_name):
     path = '/home/ubuntu/inputImages/' + image_name
     filename = '/home/ubuntu/outputImages/' + image_name + '.txt'
+    print(path)
+    print(filename)
     subprocess.run(['touch', filename])
     output_file = open(filename, "w")
     p = subprocess.Popen(['python3', './image_classification.py', path],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
-    output_file.write("Output: {}\n".format(out.decode()))
-    output_file.write("Error: {}\n".format(err.decode()))
+    sol=out.decode()
+    print("SOL",sol)
+    print(err)
+    output_file.write("Output: {}\n".format(sol))
     output_file.close()
     upload_to_s3(filename, os.path.splitext(image_name)[0] + '.txt')
     try:
@@ -65,7 +69,7 @@ def classify_image(image_name):
         print("Files deleted successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
-    return out.decode()
+    return sol
 
 
 if __name__ == '__main__':

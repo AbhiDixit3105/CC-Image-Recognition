@@ -1,0 +1,16 @@
+import subprocess
+output_file = open('abc.txt', "w")
+p = subprocess.Popen(['echo', 'hello'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out, err = p.communicate()
+print(out)
+print(err)
+print(out.decode())
+print(err.decode())
+output_file.write("Output: {}\n".format(out.decode()))
+output_file.write("Error: {}\n".format(err.decode()))
+output_file.close()
+print(out)
+print(err)
+print(out.decode())
+print(err.decode())
