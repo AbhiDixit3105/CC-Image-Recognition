@@ -21,7 +21,7 @@ def get_queue_data():
         AttributeNames=['SentTimestamp'],
         MaxNumberOfMessages=1,
         MessageAttributeNames=['All'],
-        VisibilityTimeout=10,
+        VisibilityTimeout=3,
         WaitTimeSeconds=0
     )
     print(request)
@@ -55,10 +55,18 @@ def classify_image(image_name):
     output_file = open(filename, "w")
     p = subprocess.Popen(['python3', './image_classification.py', path],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
+    # Create a subprocess.Popen() object
+
+
+    # Set the capture_output argument to True
+    p.capture_output = True
+    # Execute the command using the run() method
+    out,err = p.communicate()
     output_file.write("Output: {}\n".format(out.decode()))
-    output_file.write("Error: {}\n".format(err.decode()))
+    output_file.write("Error: {}\n".format(err))
     output_file.close()
+    print(out)
+    print(err)
     upload_to_s3(filename, os.path.splitext(image_name)[0] + '.txt')
     try:
         subprocess.run(['rm', path, filename], check=True)
