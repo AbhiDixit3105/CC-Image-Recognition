@@ -1,11 +1,17 @@
+import base64
 import time
 
 import boto3
 
+user_data_script = '''#!/bin/bash
+set -e -x
+cd /home/ubuntu/app-tier
+sudo pip3 install boto3
+sudo python3 AppController.py'''
 
 class ScalingController:
     def __init__(self):
-        self.ami = 'ami-08c91ab714ebe5c98'
+        self.ami = 'ami-0799d33b4fe534e22'
         self.instance_type = 't2.micro'
         self.key_name = 'CC-PROJECT-KEY'
         self.subnet_id = "subnet-09f0728d34cc36e41"
@@ -61,9 +67,7 @@ class ScalingController:
 
     def create_ec2_instance(self, cc):
         client = boto3.client("ec2", region_name=self.region)
-        user_data_script = """#!/bin/bash
-python3 /home/ubuntu/sqs-tier/SqsController.py
-"""
+        #user_data = base64.b64encode(user_data_script.encode()).decode()
         instance = client.run_instances(
             ImageId=self.ami,
             InstanceType=self.instance_type,
@@ -108,7 +112,6 @@ python3 /home/ubuntu/sqs-tier/SqsController.py
         instance_map = self.get_instance_map()
         current_running_instance_count = len(instance_map["RUNNING"])
         print("Current instance count", current_running_instance_count)
-
         current_starting_instance_count = len(instance_map["STARTING"])
         if current_running_instance_count == 0:
             self.scale_out_function(0, self.min_instances)
@@ -117,13 +120,18 @@ python3 /home/ubuntu/sqs-tier/SqsController.py
             if current_running_instance_count > self.min_instances:
                 self.scale_in_function()
                 current_running_instance_count -= 1
+        elif current_running_instance_count + current_starting_instance_count >= depth:
+            print("Not scaling, sufficient instances")
+            if current_running_instance_count + current_starting_instance_count > depth:
+                self.scale_in_function()
+                current_running_instance_count -= 1
         elif current_running_instance_count + current_starting_instance_count == self.max_instances:
             print("Not scaling, max instance count reached")
         elif depth > 1 and current_starting_instance_count == 0:
+            print("depth > 1")
             available_capacity = self.max_instances - current_running_instance_count - current_starting_instance_count
             scale_up_count = min(depth - current_starting_instance_count, available_capacity) \
                 if depth > current_running_instance_count else min(
                 depth, available_capacity)
             self.scale_out_function(current_running_instance_count, scale_up_count)
-            print("Scaling up by : ", depth)
-            self.scale_out_function(current_running_instance_count, depth)
+            print("Scaling by deficient count")
