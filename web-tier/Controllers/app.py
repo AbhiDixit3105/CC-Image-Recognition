@@ -112,10 +112,14 @@ def upload_image():
 
 @flask_scheduler.task('interval', id='initiateScaling', seconds=15, max_instances=1)
 def initiate_scaling():
+    print("Monitoring Queues Start")
     sc.monitor_queue_status()
-    print("Monitoring Queues")
+    print("Monitoring Queues End")
 
 
 # main driver function
 if __name__ == '__main__':
-    app.run()
+    try:
+        app.run()
+    except Exception as e:
+        print(e)

@@ -45,6 +45,8 @@ class ScalingController:
 
             )
         ]
+
+
         starting_instances = [
             instance.id
             for instance in self.ec2.instances.filter(
@@ -52,10 +54,6 @@ class ScalingController:
                     {
                         "Name": "instance-state-name",
                         "Values": ["pending"],
-                    },
-                    {
-                        "Name": "instance-status.status",
-                        "Values": ["initializing"],
                     },
                     {
                         "Name": "tag:cc-processing-server",
@@ -116,6 +114,7 @@ class ScalingController:
         print("Current instance count", current_running_instance_count)
         current_starting_instance_count = len(instance_map["STARTING"])
         if current_running_instance_count == 0:
+            print("Scaling up")
             self.scale_out_function(0, self.min_instances)
         if depth == 0:
             if current_running_instance_count > self.min_instances:
