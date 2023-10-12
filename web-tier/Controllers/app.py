@@ -56,9 +56,8 @@ def upload_image_workload():
                 filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 awsc.upload_to_s3(file)
                 response = awsc.send_to_sqs(file.filename)
-                messageId=response['MessageId']
-                while True:
-                    output_val=awsc.receive_from_sqs(messageId)
+                while not response_receieved:
+                    output_val=awsc.receive_from_sqs()
                     print(output_val)
                     if len(output_val) > 0 :
                         awsc.delete_message(output_val[1])
