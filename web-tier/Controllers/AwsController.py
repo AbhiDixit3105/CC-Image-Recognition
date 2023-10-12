@@ -37,7 +37,7 @@ class AwsController:
         )
         print("Delete message successful")
 
-    def receive_from_sqs(self):
+    def receive_from_sqs(self,messageId):
         # get msg from reponse queue, check message body for message id and match to message_id.
         # If exists, delete form queue, else ignore
 
@@ -55,8 +55,7 @@ class AwsController:
             messages = response['Messages']
             for message in messages:
                 output_val = message['Body']
-                print(output_val)
-                #self.delete_message(message)
-                return [ output_val, message]
-            time.sleep(3)
+                if messageId in output_val:
+                    print(output_val)
+                    return [ output_val, message]
         return []
